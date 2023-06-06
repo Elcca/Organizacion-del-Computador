@@ -37,18 +37,18 @@ main:
 ejec_w:
 	//cargo la direccion de retorno en el stack pointer
 	sub sp, sp, 8
-	stur x30, [sp]
+	stur lr, [sp]
 
 	movz x3, 0xCC00, lsl 00			//seteo el color
-	add x29,x29,4					//le sumo 4 a la posicion donde empiezo el cuadrado
+	add x29,x29,20					//le sumo 4 a la posicion donde empiezo el cuadrado
 	mov x0, x29
 	
 	bl square
 	//bl delay	
 
-	ldur x30,[sp]
+	ldur lr,[sp]
 	add sp,sp,8
-	ret
+	br lr
 
 ejec_s:
 	//cargo la direccion de retorno en el stack pointer
