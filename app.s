@@ -11,6 +11,8 @@
 	.equ key_d, 0x10
 	.equ key_space, 0x20
 	delay_time: .dword 0x8fffff
+	.equ ancho, 100
+	.equ alto, 100
 
 	.globl main
 
@@ -27,18 +29,74 @@ main:
 	mov x1,100
 	mov x2,100
 	mov x29,5000
+	mov x28,10000
+	mov x27,1000
+	mov x26,3000
 	b leer
-	//bl square
+	
 ejec_w:
-	movz x3, 0xCC00, lsl 00
-	add x29,x29,4
+	//cargo la direccion de retorno en el stack pointer
+	sub sp, sp, 8
+	stur x30, [sp]
+
+	movz x3, 0xCC00, lsl 00			//seteo el color
+	add x29,x29,4					//le sumo 4 a la posicion donde empiezo el cuadrado
 	mov x0, x29
 	
 	bl square
-	bl delay	
+	//bl delay	
 
+	ldur x30,[sp]
+	add sp,sp,8
 	ret
 
+ejec_s:
+	//cargo la direccion de retorno en el stack pointer
+	sub sp, sp, 8
+	stur x30, [sp]
+
+	movz x3, 0x4400, lsl 00
+	add x28,x28,4
+	mov x0, x28
+	
+	bl square
+	//bl delay	
+
+	ldur x30,[sp]
+	add sp,sp,8
+	ret
+
+ejec_d:
+	//cargo la direccion de retorno en el stack pointer
+	sub sp, sp, 8
+	stur x30, [sp]
+
+	movz x3, 0x1160, lsl 00
+	add x27,x27,4
+	mov x0, x27
+	
+	bl square
+	//bl delay	
+
+	ldur x30,[sp]
+	add sp,sp,8
+	ret
+
+ejec_space:
+	//cargo la direccion de retorno en el stack pointer
+	sub sp, sp, 8
+	stur x30, [sp]
+
+	movz x3, 0x1160, lsl 16
+	add x26,x26,4
+	mov x0, x26
+	
+	bl square
+	//bl delay	
+
+	ldur x30,[sp]
+	add sp,sp,8
+	ret
 
 fondo:
 	mov x2, SCREEN_HEIGH         // Y Size
@@ -73,19 +131,21 @@ square2:
 	add x0,x0,x14
 	sub x13,x13,1
 	cbnz x13,square1
-	b leer
+	ret
 
-change:
+ejec_a:
+	//cargo la direccion de retorno en el stack pointer
+	sub sp, sp, 8
+	stur x30, [sp]
+
 	mov x3, 0x00
 	mov x0, xzr
 	bl square
+
+	ldur x30,[sp]
+	add sp,sp,8
+	ret
 	
-delay:
-        mov x9, delay_time
-    delay_loop:
-        subs x9, x9, 1
-        cbnz x9, delay_loop
-		ret
 
 leer:
 	mov x9, GPIO_BASE			//Seteo x9 en la direccion base de gpio
@@ -96,23 +156,31 @@ leer:
 	// Lee el estado de los GPIO 0 - 31
 	ldr w10, [x9, GPIO_GPLEV0]
 	
-	and w11, w10, 0b00000010	//Mascara de W
-	and w12, w10, 0b00000100 	//Mascara de A
+	and w11, w10, key_w	//Mascara de W
+	and w12, w10, key_a 	//Mascara de A
+	and w13, w10, key_s 	//Mascara de S
+	and w14, w10, key_d 	//Mascara de D
+	and w15, w10, key_space //Mascara de space
+
 
 	cmp w11, key_w
 	beq ejec_w
 
 	cmp w12, key_a
-	beq change
+	beq ejec_a
+
+	cmp w13, key_s
+	beq ejec_s
+
+	cmp w14, key_d
+	beq ejec_d
+
+	cmp w15, key_space
+	beq ejec_space
 
 	b leer
 
-	// si w11 es 0 entonces el GPIO 1 estaba liberado
-	// de lo contrario será distinto de 0, (en este caso particular 2)
-	// significando que el GPIO 1 fue presionado
-
-	//---------------------------------------------------------------
-	// Infinite Loop
+	
 
 InfLoop:
 	b InfLoop
