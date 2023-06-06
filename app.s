@@ -28,10 +28,10 @@ main:
 
 	mov x1,100
 	mov x2,100
-	mov x29,5000
-	mov x28,10000
-	mov x27,1000
-	mov x26,3000
+	mov x29,5000		//posicion del cuadrado de w
+	mov x28,10000		//posicion del cuadrado de s
+	mov x27,1000		//posicion del cuadrado de d
+	mov x26,3000		//posicion del cuadrado de space
 	b leer
 	
 ejec_w:
