@@ -44,7 +44,6 @@ ejec_w:
 	mov x0, x29
 	
 	bl square
-	//bl delay	
 
 	ldur lr,[sp]
 	add sp,sp,8
@@ -59,8 +58,7 @@ ejec_s:
 	add x28,x28,4
 	mov x0, x28
 	
-	bl square
-	//bl delay	
+	bl square	
 
 	ldur x30,[sp]
 	add sp,sp,8
@@ -76,7 +74,6 @@ ejec_d:
 	mov x0, x27
 	
 	bl square
-	//bl delay	
 
 	ldur x30,[sp]
 	add sp,sp,8
@@ -91,8 +88,7 @@ ejec_space:
 	add x26,x26,4
 	mov x0, x26
 	
-	bl square
-	//bl delay	
+	bl square	
 
 	ldur x30,[sp]
 	add sp,sp,8
