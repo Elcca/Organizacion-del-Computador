@@ -13,6 +13,10 @@
 	delay_time: .dword 0x8fffff
 	.equ ancho, 50
 	.equ alto, 50
+	.equ color_cuadrado, 0xCC00
+	.equ ancho2, 50
+	.equ alto2, 50
+	.equ color_cuadrado2, 0xF08241
 
 	.globl main
 
@@ -28,15 +32,59 @@ main:
 
 	mov x1,ancho
 	mov x2,alto
-	mov x29,5000		//posicion del cuadrado de d
-	mov x28,10000		//posicion del cuadrado de s
-	mov x27,0xffff		//posicion del cuadrado de w
-	mov x26,3000		//posicion del cuadrado de space
+	mov x29,5000		//posicion del cuadrado 
+	mov x28,0xffff		//posicion del cuadrado2 
+	mov x26,xzr			//variable que determina que cuadrado muevo
+						//0 para cuadrado, 1 para cuadrado2
 
-	bl linea_random
-	bl linea_random2
+	//bl linea_random
+	//bl linea_random2
+	//bl linea_random3
+	bl draw_borthers
 
 	b leer
+
+draw_borthers:
+	mov x9,x20
+	mov x10,xzr
+	mov x12,SCREEN_WIDTH
+
+dloop1:
+	stur wzr,[x9]
+	sub x12,x12,1
+	add x9,x9,4
+	cbnz x12,dloop1
+
+	mov x12, SCREEN_WIDTH
+	mov x11, SCREEN_HEIGH
+	sub x11,x11,1
+	mul x9,x12,x11
+	lsl x9,x9,2
+	add x9,x9,x20
+
+dloop2:
+	stur wzr,[x9]
+	sub x12,x12,1
+	add x9,x9,4
+	cbnz x12,dloop2
+
+	mov x9, SCREEN_WIDTH
+	lsl x9,x9,2
+	add x9,x9,x20
+	sub x11,x9,4
+	mov x12,SCREEN_HEIGH
+	mov x10,SCREEN_WIDTH
+	lsl x10,x10,2
+	
+dloop3:
+	stur wzr,[x9]
+	stur wzr,[x11]
+	sub x12,x12,1
+	add x9,x9,x10
+	add x11,x11,x10
+	cbnz x12,dloop3
+	ret
+
 
 linea_random:
 	mov x10,SCREEN_WIDTH
@@ -60,13 +108,30 @@ linea_random2:
 	sub x11,x11,x10
 	lsl x11, x11, 2			
 	add x11,x11,x20			//lo convierto en direeciond el framebuffer
-	mov x12,100
+	add x11,x11,20
+	mov x12,500
 lloop2:
 	stur wzr,[x11]
 	sub x12,x12,1
 	add x11,x11,4
 	cbnz x12,lloop2
 	ret
+
+linea_random3:
+	mov x10,SCREEN_WIDTH
+	lsl x9,x10,2
+	sub x11, x26, 10 		//que la linea arranque 60 pixeles a la derecha del cuadrado de d
+	add x11,x11,x9			//que arranque unos pixeles mas abajo, para asegurarnos que la hitbox este bien hecha
+	lsl x11, x11, 2			
+	add x11,x11,x20			//lo convierto en direeciond el framebuffer
+	mov x12,100				
+lloop3:
+	stur wzr,[x11]
+	sub x12,x12,1
+	add x11,x11,x9
+	cbnz x12,lloop3
+	ret
+
 
 rastro_d:
 	sub x9,x29,1
@@ -112,7 +177,7 @@ ejec_d:
 
 	bl check_next_d
 
-	movz x3, 0xCC00, lsl 00			//seteo el color
+	mov x3, color_cuadrado			//seteo el color
 	add x29,x29,1					//le sumo 4 a la posicion donde empiezo el cuadrado
 	mov x0, x29
 
@@ -132,23 +197,69 @@ hit_d:
 
 	ret
 
+check_next_s:
+	mov x14,SCREEN_WIDTH
+	mov x13,alto
+	mul x13,x13,x14
+	//add x13,x13,SCREEN_WIDTH
+	mov x9,x29
+	add x9,x9,x13
+	lsl x9,x9,2
+	add x9,x9,x20
+	mov x12,ancho
+
+	mov x10,xzr
+
+checkloop_s:
+	ldur w11,[x9]
+	cmp x11,x10
+	beq hit_s
+	sub x12,x12,1
+	add x9,x9,4
+	cbnz x12,checkloop_s
+
+	ret
+
+
+rastro_s:
+	
+	sub x9,x29,SCREEN_WIDTH
+	lsl x9,x9,2
+	add x9,x9,x20
+	mov x10,x2
+
+rloop_s:
+	stur w3,[x9]
+	sub x10,x10,1
+	add x9,x9,4
+	cbnz x10,rloop_s
+	ret
+
+
 ejec_s:
 	//cargo la direccion de retorno en el stack pointer
-	//sub sp, sp, 0x8
-	//stur lr, [sp, #0]
+	sub sp, sp, 0x8
+	stur lr, [sp, #0]
 
-	movz x3, 0x4400, lsl 00
-	add x28,x28,1
-	mov x0, x28
+	bl check_next_s
+
+	mov x3, color_cuadrado
+	add x29,x29,SCREEN_WIDTH
+	mov x0, x29
 	
 	bl square	
+
+	movz x3, 0xC7, lsl 16
+	movk x3, 0x1585, lsl 00
+
+	bl rastro_s
+
+hit_s:
 	
 	bl delay
 	
-	//ldur lr,[sp]
-	//add sp,sp,8
-	
-	b leer
+	ldur lr,[sp]
+	add sp,sp,8
 
 	ret
 
@@ -157,7 +268,7 @@ rastro_w:
 	mov x11, SCREEN_WIDTH
 	mov x9,alto
 	mul x11,x11,x9
-	add x9,x27,x11
+	add x9,x29,x11
 	lsl x9,x9,2
 	add x9,x9,x20
 	mov x10,x2
@@ -172,7 +283,7 @@ rloop_w:
 check_next_w:
 	mov x14,SCREEN_WIDTH
 	//lsl x14,x14,2
-	mov x9,x27
+	mov x9,x29
 	sub x9,x9,x14
 	lsl x9,x9,2
 	add x9,x9,x20
@@ -197,9 +308,9 @@ ejec_w:
 
 	bl check_next_w
 
-	movz x3, 0x1160, lsl 00
-	sub x27,x27,SCREEN_WIDTH
-	mov x0, x27
+	mov x3, color_cuadrado
+	sub x29,x29,SCREEN_WIDTH
+	mov x0, x29
 	
 	bl square
 
@@ -216,16 +327,62 @@ hit_w:
 	add sp,sp,8
 	ret
 
-ejec_space:
+check_next_a:
+	mov x10,xzr
+	mov x9,x29
+	sub x9,x9,1
+	//add x9,x9,1
+	lsl x9,x9,2
+	add x9,x9,x20
+	mov x12,alto
+
+	mov x13,4
+	mov x14,SCREEN_WIDTH
+	mul x13,x13,x14
+
+checkloop_a:
+	ldur w11,[x9]
+	cmp x11,x10
+	beq hit_a
+	sub x12,x12,1
+	add x9,x13,x9
+	cbnz x12,checkloop_a
+
+	ret
+
+rastro_a:
+	add x9,x29,ancho
+	lsl x9,x9,2
+	add x9,x9,x20
+	mov x10,alto
+	mov x11, SCREEN_WIDTH
+	mov x12,4
+rloop_a:
+	stur w3,[x9]
+	sub x10,x10,1
+	madd x9,x11,x12,x9
+	cbnz x10,rloop_a
+	ret
+
+ejec_a:
 	//cargo la direccion de retorno en el stack pointer
 	sub sp, sp, 8
 	stur x30, [sp]
 
-	movz x3, 0x1160, lsl 16
-	add x26,x26,1
-	mov x0, x26
+	bl check_next_a
+
+	mov x3, color_cuadrado
+	sub x29,x29,1
+	mov x0, x29
 	
 	bl square	
+
+	movz x3, 0xC7, lsl 16
+	movk x3, 0x1585, lsl 00
+
+	bl rastro_a
+
+hit_a:
 
 	bl delay
 
@@ -268,14 +425,21 @@ square2:
 	cbnz x13,square1
 	ret
 
-ejec_a:
-	//cargo la direccion de retorno en el stack pointer
+ejec_space:
 	sub sp, sp, 8
 	stur x30, [sp]
 
-	mov x3, 0x00
-	mov x0, xzr
-	bl square
+	cmp x26,xzr
+	beq set_1
+	b set_0
+set_1:
+	mov x26,1
+	b retorno_space
+set_0:
+	mov x26,xzr
+	b retorno_space
+retorno_space:
+	bl delay
 
 	ldur x30,[sp]
 	add sp,sp,8
