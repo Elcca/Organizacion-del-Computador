@@ -17,12 +17,12 @@
 	.equ key_s, 0x8
 	.equ key_d, 0x10
 	.equ key_space, 0x20
-	delay_time: .dword 0x8ffff2
-	.equ ancho, 50
-	.equ alto, 50
+	delay_time: .dword 0x8fff8
+	.equ ancho, 100
+	.equ alto, 100
 	.equ color_cuadrado, 0xCC00
-	.equ ancho2, 50
-	.equ alto2, 100
+	.equ ancho2, 200
+	.equ alto2, 200
 	color_cuadrado2: .dword 0x646282
 	.equ color_cielo, 0x9999
 	.equ color_pasto, 0x9900
@@ -45,6 +45,7 @@ registers:
 	mov x24, ancho 			// empezamos con el cuadrado 1
 	// x23 se usa para el ancho del cuadrado actual
 	mov x23, alto 			// empezamos con el cuadrado 1
+
 
     ret
 

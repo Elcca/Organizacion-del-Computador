@@ -30,7 +30,7 @@ delay:
 
 ejec_w:
 	//cargo la direccion de retorno en el stack pointer
-	sub sp, sp, 8
+	sub sp, sp, 16
 	stur x30, [sp]
 
 	bl check_next_w
@@ -38,13 +38,15 @@ ejec_w:
 
 	mov x1,x24						//x1 = ancho de la figura actual
 	mov x2,x23						//x2 = alto de la figura actual
-	mov x3, x25						//le damos a square el color del cuadrado actual
+	mov x3, x25						//le damos a la figura el color del cuadrado actual
 	sub x29,x29,SCREEN_WIDTH
 	mov x0, x29
 				
 	bl casa
 
 	mov x3, color_cielo
+	mov x1,x24						
+	mov x2,x23
 
 	bl rastro_w
 
@@ -53,7 +55,7 @@ ejec_w:
 	bl delay
 
 	ldur x30,[sp]
-	add sp,sp,8
+	add sp,sp,16
 	ret
 
     check_next_w:
@@ -77,19 +79,23 @@ ejec_w:
 	    ret
 
     rastro_w:
+		stur x30, [sp, 8]
+
 	    mov x11, SCREEN_WIDTH
-	    mov x9,x2
-	    mul x11,x11,x9
-	    add x9,x29,x11
-	    lsl x9,x9,2
-	    add x9,x9,x20
+	    mov x0,x2
+	    mul x11,x11,x0
+	    add x0,x29,x11
+	    lsl x0,x0,2
+	    add x0,x0,x20
 	    mov x10,x1
 
         rloop_w:
-	        stur w3,[x9]
+	        bl fill_background
 	        sub x10,x10,1
-	        add x9,x9,4
+	        add x0,x0,4
 	        cbnz x10,rloop_w
+		
+		ldur x30,[sp, 8]
 	    ret
 
 
@@ -97,7 +103,7 @@ ejec_w:
 
 ejec_a:
 	//cargo la direccion de retorno en el stack pointer
-	sub sp, sp, 8
+	sub sp, sp, 16
 	stur x30, [sp]
 
 	bl check_next_a
@@ -108,9 +114,11 @@ ejec_a:
 	sub x29,x29,1
 	mov x0, x29
 	
-	bl square	
+	bl casa
 
 	mov x3, color_cielo
+	mov x1,x24						
+	mov x2,x23
 
 	bl rastro_a
 
@@ -119,21 +127,25 @@ ejec_a:
 	bl delay
 
 	ldur x30,[sp]
-	add sp,sp,8
+	add sp,sp,16
 	ret
 
     rastro_a:
-	    add x9,x29,x1
-	    lsl x9,x9,2
-	    add x9,x9,x20
+		stur x30, [sp, 8]
+
+	    add x0,x29,x1
+	    lsl x0,x0,2
+	    add x0,x0,x20
 	    mov x10,x2
 	    mov x11, SCREEN_WIDTH
 	    mov x12,4
         rloop_a:
-	        stur w3,[x9]
+	        bl fill_background
 	        sub x10,x10,1
-	        madd x9,x11,x12,x9
+	        madd x0,x11,x12,x0
 	        cbnz x10,rloop_a
+		
+		ldur x30,[sp, 8]
 	    ret
 
     check_next_a:
@@ -163,7 +175,7 @@ ejec_a:
 
 ejec_s:
 	//cargo la direccion de retorno en el stack pointer
-	sub sp, sp, 0x8
+	sub sp, sp, 0x16
 	stur lr, [sp, #0]
 
 	bl check_next_s
@@ -174,9 +186,11 @@ ejec_s:
 	add x29,x29,SCREEN_WIDTH
 	mov x0, x29
 	
-	bl square	
+	bl casa
 
 	mov x3, color_cielo
+	mov x1,x24						
+	mov x2,x23
 
 	bl rastro_s
 
@@ -185,23 +199,26 @@ ejec_s:
 	bl delay
 	
 	ldur lr,[sp]
-	add sp,sp,8
+	add sp,sp,16
 
 	ret
 
 
     rastro_s:
-	
-	    sub x9,x29,SCREEN_WIDTH
-	    lsl x9,x9,2
-	    add x9,x9,x20
+		stur x30, [sp, 8]
+
+	    sub x0,x29,SCREEN_WIDTH
+	    lsl x0,x0,2
+	    add x0,x0,x20
 	    mov x10,x1
 
         rloop_s:
-	        stur w3,[x9]
+	        bl fill_background
 	        sub x10,x10,1
-	        add x9,x9,4
+	        add x0,x0,4
 	        cbnz x10,rloop_s
+
+		ldur x30, [sp, 8]
 	    ret
 
     check_next_s:
@@ -215,7 +232,7 @@ ejec_s:
 	    add x9,x9,x20
 	    mov x12,x1
 
-	    mov x10,color_pasto
+	    mov x10,xzr
 
         checkloop_s:
 	        ldur w11,[x9]
@@ -232,7 +249,7 @@ ejec_s:
 
 ejec_d:
 	//cargo la direccion de retorno en el stack pointer
-	sub sp, sp, 8
+	sub sp, sp, 16
 	stur lr, [sp]
 
 	bl check_next_d
@@ -243,9 +260,11 @@ ejec_d:
 	add x29,x29,1					//le sumo 4 a la posicion donde empiezo el cuadrado
 	mov x0, x29
 				
-	bl square
+	bl casa
 
 	mov x3, color_cielo
+	mov x1,x24						
+	mov x2,x23
 
 	bl rastro_d
 
@@ -254,7 +273,7 @@ ejec_d:
 	bl delay
 
 	ldur lr,[sp]
-	add sp,sp,8
+	add sp,sp,16
 
 	ret
 
@@ -282,17 +301,21 @@ ejec_d:
 	    ret
 
     rastro_d:
-	    sub x9,x29,1
-	    lsl x9,x9,2
-	    add x9,x9,x20
+		stur x30, [sp, 8]
+
+	    sub x0,x29,1
+	    lsl x0,x0,2
+	    add x0,x0,x20
 	    mov x10,x2
 	    mov x11, SCREEN_WIDTH
 	    mov x12,4
         rloop_d:
-	        stur w3,[x9]
+	        bl fill_background
 	        sub x10,x10,1
-	        madd x9,x11,x12,x9
+	        madd x0,x11,x12,x0
 	        cbnz x10,rloop_d
+
+		ldur x30, [sp, 8]
 	    ret
 
 //----------- EJECUCION DE SPACE ----------- 
