@@ -9,21 +9,33 @@ main:
 	mov x20, x0 // Guarda la dirección base del framebuffer en x20
 	//---------------- CODE HERE ------------------------------------
 
-	movz x10, 0xC7, lsl 16
-	movk x10, 0x1585, lsl 00
+	
 
 	bl fondo
-	bl registers
+	
+	mov x0, 0xffff
+	mov x1, 200
+	mov x2, 200
+
+	bl casa
+
+	/*mov x10, color_cielo
+	mov x11, color_cuadrado
+	bl coordenadas
+	bl direccion
+	bl circuloF*/
 
 	mov x1,ancho
 	mov x2,alto
-	
+
+	bl registers
 	
 	mov x26,xzr			//variable que determina que cuadrado muevo
 						//0 para cuadrado, 1 para cuadrado2
 
 
 	bl draw_borthers
+	
 
 	b leer
 

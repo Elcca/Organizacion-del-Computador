@@ -17,17 +17,34 @@
 	.equ key_s, 0x8
 	.equ key_d, 0x10
 	.equ key_space, 0x20
-	delay_time: .dword 0x8fffff
+	delay_time: .dword 0x8ffff2
 	.equ ancho, 50
 	.equ alto, 50
 	.equ color_cuadrado, 0xCC00
 	.equ ancho2, 50
-	.equ alto2, 50
-	.equ color_cuadrado2, 0xF08241
+	.equ alto2, 100
+	color_cuadrado2: .dword 0x646282
+	.equ color_cielo, 0x9999
+	.equ color_pasto, 0x9900
+	color_techo: .dword 0xCC000
+
+	
 
 registers:
-    mov x29,5000		//posicion del cuadrado 
-    mov x28,0xffff		//posicion del cuadrado2 
+
+	// x29 se usa para la posicion del cuadrado actual
+    mov x28,5000		//posicion del cuadrado 
+    mov x27,0xffff		//posicion del cuadrado2 
+	mov x29,x28
+
+	mov x26,xzr 		//x26 se usa para definir que figura se mueve
+
+	// x25 se usa para el color del cuadrado actual
+	mov x25, color_cuadrado // empezamos en el cuadrado 1
+	// x24 se usa para el ancho del cuadrado actual
+	mov x24, ancho 			// empezamos con el cuadrado 1
+	// x23 se usa para el ancho del cuadrado actual
+	mov x23, alto 			// empezamos con el cuadrado 1
 
     ret
 
