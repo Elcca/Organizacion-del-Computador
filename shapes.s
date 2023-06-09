@@ -7,7 +7,7 @@
 
 .include "data.s"
 
-
+ 
 //----------- FONDO -----------
 
 fondo:
@@ -45,9 +45,9 @@ square:
 	lsl x0,x0,2		//avanzo al nro de la direccion
 	add x0,x0,x20 	//direccion +x20
 	mov x13,x2		//alto del cuadrado
-	mov x14,SCREEN_WIDTH
-	sub x14,x14,x1 //pixeles - ancho del cuadrado
-	lsl x14,x14,2
+	mov x16,SCREEN_WIDTH
+	sub x16,x16,x1 //pixeles - ancho del cuadrado
+	lsl x16,x16,2
 	mov x11,x3
 
     square1:
@@ -57,12 +57,44 @@ square:
 	    add x0,x0,4
 	    sub x12,x12,1
 	    cbnz x12,square2
-	    add x0,x0,x14
+	    add x0,x0,x16
 	    sub x13,x13,1
 	    cbnz x13,square1
 	ret
 
+
+square_fill:
+	sub sp, sp, 8
+	stur lr, [sp]
+
+	lsl x0,x0,2		//avanzo al nro de la direccion
+	add x0,x0,x20 	//direccion +x20
+	mov x13,x2		//alto del cuadrado
+	mov x16,SCREEN_WIDTH
+	sub x16,x16,x1 //pixeles - ancho del cuadrado
+	lsl x16,x16,2
+
+    squarefill1:
+	    mov x12,x1		//ancho del cuadrado
+    squarefill2:	
+	    bl fill_background
+	    add x0,x0,4
+	    sub x12,x12,1
+	    cbnz x12,squarefill2
+	    add x0,x0,x16
+	    sub x13,x13,1
+	    cbnz x13,squarefill1
+
+	ldur lr,[sp]
+	add sp,sp,8
+	ret
+
 //----------- DIBUJO DE CASA -----------
+
+/*
+	A casa le paso x0: pixel donde empiezo el dibujo (arriba izq)
+				   x1,x2: ancho y alto de la figura, en este caso es lo mismo
+*/
 
 casa:
 	sub sp, sp, #8
@@ -71,54 +103,53 @@ casa:
 	mov x4,x0						//guardo x0 para usarlo en la funcion
 	mov x6,x1						//guardo x1 para usarlo
 	mov x7,x2						//guardo x2
-	lsr x9,x2,1
-	mov x10,SCREEN_WIDTH
-	madd x5,x10,x9,x0
+	lsr x9,x2,1						//x9 = mitad del tamaño del dibujo
+	mov x10,SCREEN_WIDTH			
+	madd x5,x10,x9,x0				//x5 = el pixel del medio a la izq
 
-	mov x0, x5						//bloque para tapar techo izq 
-	mov x3, color_cuadrado		
-	mov x1,x9
+	mov x0, x5						//bloque para tapar techo izq 	
+	mov x1,x9						//seteo tamaño del triangulo
 	mov x2,x9
 	bl trianguloc
 
 
 	mov x0, x5						//bloque para dibujar techo izq
-	movz x3, 0xCC, lsl 16
-	mov x1,x9
+	movz x3, 0xDF, lsl 16	
+	movk x3, 0x1F1F, lsl 0
+	mov x1,x9						//seteo tamaño del triangulo
 	mov x2,x9
 	bl trianguloa
 
 	mov x0, x5						//bloque para tapar el cuadrado de la casa izq
-	lsr x1,x9,1 
-	mov x2,x9
-	mov x3, color_cuadrado
-	bl square
+	lsr x1,x9,1 					//ancho del cuadrado
+	mov x2,x9						//alto
+	bl square_fill
 
 	mov x0, x5						//bloque para tapar el cuadrado de la casa der
-	add x0,x0,x9
-	lsr x10,x6,2
-	add x0,x0,x10
-	lsr x1,x9,1 
-	mov x2,x9
-	mov x3, color_cuadrado
-	bl square
+	add x0,x0,x9					//x0 = pixel de la izq medio + media figura
+	lsr x10,x6,2					
+	add x0,x0,x10					//x0 = x0 + 1/4 de la figura
+	lsr x1,x9,1 					//ancho del cuadrado
+	mov x2,x9						//alto del cuadrado
+	bl square_fill
 
 	mov x0, x5						//bloque para dibujar el cuadrado de la casa
 	lsr x10,x6,2
 	add x0,x0,x10
 	mov x1,x9
 	mov x2,x9
-	movz x3, 0xCC, lsl 16
+	movz x3, 0xFF, lsl 16
+	movk x3, 0x9933, lsl 0
 	bl square
 
 	add x0,x4,x9					//bloque para dibujar techo der
-	movz x3, 0xCC, lsl 16
+	movz x3, 0xDF, lsl 16
+	movk x3, 0x321F, lsl 0
 	mov x1,x9
 	mov x2,x9
 	bl triangulob
 
-	add x0,x4,x9					//bloque para tapar techo der 
-	mov x3, color_cuadrado		
+	add x0,x4,x9					//bloque para tapar techo der 		
 	mov x1,x9
 	mov x2,x9
 	bl triangulo
@@ -172,13 +203,41 @@ draw_borthers:
 		cbnz x12,dloop3
 	ret
 
+// --------------------- relleno de fondo -----------------------------
+
+fill_background:
+	mov x15,SCREEN_WIDTH
+	mov x17,SCREEN_HEIGH
+	lsr x17,x17,1
+	mul x14,x15,x17				//pixel de inicio del pasto / final del cielo
+	lsl x14,x14,2
+	add x14,x14,x20
+
+
+	cmp x0,x14
+	b.ge pasto
+	b cielo
+
+	cielo:
+		mov x3, color_cielo 
+		stur w3,[x0]
+		b endfill
+	pasto:
+		mov x3, color_pasto
+		stur w3,[x0]
+		b endfill
+	endfill:
+	ret
 
 // --------------------- triangulos -----------------------------
 
 triangulo:
-	mov x17,xzr
+	sub sp, sp, 8
+	stur lr, [sp]
+
+	mov x11,xzr
 	mov x16,xzr
-	mov x14, x2        		// salvo Y Size
+	mov x13, x2        		// salvo Y Size
 	lsl x0,x0,2		//avanzo al nro de la direccion
 	add x0,x0,x20 	//direccion +x20
 	mov x21, SCREEN_WIDTH
@@ -186,55 +245,58 @@ triangulo:
 
 	loop5:
 
-    	mov x15, x1         	// salvo X Size
-		sub x15,x15,x16
+    	mov x8, x1         	// salvo X Size
+		sub x8,x8,x16
 
 	loop6:
 
-    	stur w3,[x0] 				// Colorear el pixel N
+    	bl fill_background 				// Colorear el pixel N
    		add x0,x0,4   				// Siguiente pixel
-    	sub x15,x15,1    			// Decrementar contador X
-    	cbnz x15,loop6  			// Si no terminó la fila, salto
+    	sub x8,x8,1    			// Decrementar contador X
+    	cbnz x8,loop6  			// Si no terminó la fila, salto
 		
-		sub x14,x14,1    			// Decrementar contador Y
+		sub x13,x13,1    			// Decrementar contador Y
 		msub x0,x19,x1,x0			//vuelvo al princio de la linea que estoy pintado x0=x0-x1*4
 		madd x0,x21,x19,x0  	//x0=x0+640*4
 		add x16,x16,1
-	 	mul x17,x16,x19
-		add x0,x0,x17
-	 	cbnz x14,loop5  			// Si no es la última fila, saltostur w11,[x20]
-
+	 	mul x11,x16,x19
+		add x0,x0,x11
+	 	cbnz x13,loop5  			// Si no es la última fila, saltostur w11,[x20]
+	
+	ldur lr,[sp]
+	add sp,sp,8
+	
 	ret
 
 trianguloa:
 
 	lsl x0,x0,2		//avanzo al nro de la direccion
 	add x0,x0,x20 	//direccion +x20
-	mov x17,xzr
+	mov x11,xzr
 	mov x16,xzr
-	mov x14, x2        		// salvo Y Size
+	mov x13, x2        		// salvo Y Size
 	mov x21, SCREEN_WIDTH
 	mov x19,4
 
 	loop5a:
 
-    	mov x15, x1         	// salvo X Size
-		sub x15,x15,x16
+    	mov x8, x1         	// salvo X Size
+		sub x8,x8,x16
 
 	loop6a:
 
     	stur w3,[x0] 				// Colorear el pixel N
     	add x0,x0,4   				// Siguiente pixel
-    	sub x15,x15,1    			// Decrementar contador X
-    	cbnz x15,loop6a  			// Si no terminó la fila, salto
+    	sub x8,x8,1    			// Decrementar contador X
+    	cbnz x8,loop6a  			// Si no terminó la fila, salto
 		
-		sub x14,x14,1    			// Decrementar contador Y
+		sub x13,x13,1    			// Decrementar contador Y
 		msub x0,x19,x1,x0			//vuelvo al princio de la linea que estoy pintado x0=x0-x1*4
 		msub x0,x21,x19,x0  	//x0=x0+640*4
 		add x16,x16,1
-	    mul x17,x16,x19
-		add x0,x0,x17
-	    cbnz x14,loop5a  			// Si no es la última fila, saltostur w11,[x20]
+	    mul x11,x16,x19
+		add x0,x0,x11
+	    cbnz x13,loop5a  			// Si no es la última fila, saltostur w11,[x20]
 
 	ret
 
@@ -242,64 +304,70 @@ triangulob:
 
 	lsl x0,x0,2		//avanzo al nro de la direccion
 	add x0,x0,x20 	//direccion +x20
-	mov x17,xzr
+	mov x11,xzr
 	mov x16,x1
-	mov x14, x2        		// salvo Y Size
+	mov x13, x2        		// salvo Y Size
 	mov x18,1
 	mov x21, SCREEN_WIDTH
 	mov x19,4
 
 	loop5b:
 
-    	mov x15, x18         	// salvo X Size
+    	mov x8, x18         	// salvo X Size
 
 	loop6b:
 
     	stur w3,[x0] 				// Colorear el pixel N
     	add x0,x0,4   				// Siguiente pixel
-    	sub x15,x15,1    			// Decrementar contador X
-    	cbnz x15,loop6b  			// Si no terminó la fila, salto
+    	sub x8,x8,1    			// Decrementar contador X
+    	cbnz x8,loop6b  			// Si no terminó la fila, salto
 		
-		sub x14,x14,1    			// Decrementar contador Y
+		sub x13,x13,1    			// Decrementar contador Y
 		msub x0,x19,x18,x0			//vuelvo al princio de la linea que estoy pintado x0=x0-x1*4
 		madd x0,x21,x19,x0  	//x0=x0+640*4
 		add x18,x18,1
 	  
-	  	cbnz x14,loop5b  			// Si no es la última fila, saltostur w11,[x20]
+	  	cbnz x13,loop5b  			// Si no es la última fila, saltostur w11,[x20]
 
 	ret
 
 
 trianguloc:
+	sub sp, sp, 8
+	stur lr, [sp]
 
 	lsl x0,x0,2		//avanzo al nro de la direccion
 	add x0,x0,x20 	//direccion +x20
-	mov x17,xzr
+	mov x11,xzr
 	mov x16,x1
-	mov x14, x2        		// salvo Y Size
+	mov x13, x2        		// salvo Y Size
 	mov x18,1
 	mov x21, SCREEN_WIDTH
 	mov x19,4
 
 	loop5c:
 
-    	mov x15, x18         	// salvo X Size
+    	mov x8, x18         	// salvo X Size
 
 	loop6c:
 
-    	stur w3,[x0] 				// Colorear el pixel N
+    	bl fill_background 				// Colorear el pixel N
     	add x0,x0,4   				// Siguiente pixel
-    	sub x15,x15,1    			// Decrementar contador X
-    	cbnz x15,loop6c  			// Si no terminó la fila, salto
+    	sub x8,x8,1    			// Decrementar contador X
+    	cbnz x8,loop6c  			// Si no terminó la fila, salto
 		
-		sub x14,x14,1    			// Decrementar contador Y
+		sub x13,x13,1    			// Decrementar contador Y
 		msub x0,x19,x18,x0			//vuelvo al princio de la linea que estoy pintado x0=x0-x1*4
 		msub x0,x21,x19,x0  	//x0=x0+640*4
 		add x18,x18,1
 	  
-	  	cbnz x14,loop5c  			// Si no es la última fila, saltostur w11,[x20]
+	  	cbnz x13,loop5c  			// Si no es la última fila, saltostur w11,[x20]
 
 		mov x0,x20
+
+	ldur lr,[sp]
+	add sp,sp,8
+
 	ret
 
 
