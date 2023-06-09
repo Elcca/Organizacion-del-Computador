@@ -68,9 +68,9 @@ casa:
 	sub sp, sp, #8
 	stur lr, [sp, #0]
 
-	mov x4,x0
-	mov x6,x1
-	mov x7,x2
+	mov x4,x0						//guardo x0 para usarlo en la funcion
+	mov x6,x1						//guardo x1 para usarlo
+	mov x7,x2						//guardo x2
 	lsr x9,x2,1
 	mov x10,SCREEN_WIDTH
 	madd x5,x10,x9,x0
@@ -88,11 +88,27 @@ casa:
 	mov x2,x9
 	bl trianguloa
 
+	mov x0, x5						//bloque para tapar el cuadrado de la casa izq
+	lsr x1,x9,1 
+	mov x2,x9
+	mov x3, color_cuadrado
+	bl square
+
+	mov x0, x5						//bloque para tapar el cuadrado de la casa der
+	add x0,x0,x9
+	lsr x10,x6,2
+	add x0,x0,x10
+	lsr x1,x9,1 
+	mov x2,x9
+	mov x3, color_cuadrado
+	bl square
+
 	mov x0, x5						//bloque para dibujar el cuadrado de la casa
 	lsr x10,x6,2
 	add x0,x0,x10
 	mov x1,x9
 	mov x2,x9
+	movz x3, 0xCC, lsl 16
 	bl square
 
 	add x0,x4,x9					//bloque para dibujar techo der
