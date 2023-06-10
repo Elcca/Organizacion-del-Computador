@@ -13,8 +13,8 @@ main:
 	bl fondo
 	
 	mov x0, 0xffff
-	mov x1, 200
-	mov x2, 200
+	mov x1, tamaño_casa2
+	mov x2, tamaño_casa2
 
 	bl casa
 

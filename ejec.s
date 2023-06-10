@@ -35,13 +35,12 @@ ejec_w:
 
 	bl check_next_w
 
-
 	mov x1,x24						//x1 = ancho de la figura actual
 	mov x2,x23						//x2 = alto de la figura actual
 	mov x3, x25						//le damos a la figura el color del cuadrado actual
 	sub x29,x29,SCREEN_WIDTH
 	mov x0, x29
-				
+
 	bl casa
 
 	mov x3, color_cielo
@@ -66,17 +65,29 @@ ejec_w:
 	    add x9,x9,x20					//convierto x9 en posiciond el FB
 	    mov x12,x1						//x12 = el ancho de la figura
 
-	    mov x10,xzr						//x10 = color negro
-
         checkloop_w:
 	        ldur w11,[x9]
-	        cmp x11,x10
+	        mov x10,xzr					//x10 = color negro
+			cmp x11,x10					//si el proximo es negro "hit", no avanzo
 	        beq hit_w
+
+			mov x10,color_cielo
+			cmp x11,x10					//si el color no es el del cielo comparo con el del pasto
+	        bne next_color_w
+			continue_w:
+
 	        sub x12,x12,1
 	        add x9,x9,4
 	        cbnz x12,checkloop_w
 
 	    ret
+
+		next_color_w:
+			mov x10,color_pasto
+			cmp x11,x10					//si tampoco es el del pasto, es el color de algun dibujo (no avanzo)
+	        bne hit_w
+			b continue_w
+
 
     rastro_w:
 		stur x30, [sp, 8]
@@ -149,10 +160,8 @@ ejec_a:
 	    ret
 
     check_next_a:
-	    mov x10,xzr
 	    mov x9,x29
 	    sub x9,x9,1
-	    //add x9,x9,1
 	    lsl x9,x9,2
 	    add x9,x9,x20
 	    mov x12,x2
@@ -163,13 +172,26 @@ ejec_a:
 
         checkloop_a:
 	        ldur w11,[x9]
+			mov x10,xzr
 	        cmp x11,x10
 	        beq hit_a
+
+			mov x10,color_cielo
+			cmp x11,x10
+	        bne next_color_a
+			continue_a:
+
 	        sub x12,x12,1
 	        add x9,x13,x9
 	        cbnz x12,checkloop_a
 
 	    ret
+
+		next_color_a:
+			mov x10,color_pasto
+			cmp x11,x10
+			bne hit_a
+			b continue_a
 
 //----------- EJECUCION DE S ----------- 
 
@@ -179,13 +201,15 @@ ejec_s:
 	stur lr, [sp, #0]
 
 	bl check_next_s
-
+	
 	mov x1,x24
 	mov x2,x23
 	mov x3, x25						//le damos a square el color del cuadrado actual
 	add x29,x29,SCREEN_WIDTH
 	mov x0, x29
 	
+	bl check_next_s
+
 	bl casa
 
 	mov x3, color_cielo
@@ -225,24 +249,34 @@ ejec_s:
 	    mov x14,SCREEN_WIDTH
 	    mov x13,x2
 	    mul x13,x13,x14
-	    //add x13,x13,SCREEN_WIDTH
 	    mov x9,x29
 	    add x9,x9,x13
 	    lsl x9,x9,2
 	    add x9,x9,x20
 	    mov x12,x1
 
-	    mov x10,xzr
-
         checkloop_s:
 	        ldur w11,[x9]
+			mov x10,xzr
 	        cmp x11,x10
 	        beq hit_s
+
+			mov x10,color_cielo
+			cmp x11,x10
+			bne next_color_s
+			continue_s:
+
 	        sub x12,x12,1
 	        add x9,x9,4
 	        cbnz x12,checkloop_s
 
 	    ret
+
+		next_color_s:
+			mov x10,color_pasto
+			cmp x11,x10
+			bne hit_s
+			b continue_s
 
 
 //----------- EJECUCION DE D ----------- 
@@ -258,8 +292,8 @@ ejec_d:
 	mov x2,x23
 	mov x3, x25						//le damos a square el color del cuadrado actual
 	add x29,x29,1					//le sumo 4 a la posicion donde empiezo el cuadrado
-	mov x0, x29
-				
+	mov x0, x29		
+	
 	bl casa
 
 	mov x3, color_cielo
@@ -278,10 +312,8 @@ ejec_d:
 	ret
 
     check_next_d:
-	    mov x10,xzr
 	    mov x9,x29
 	    add x9,x9,x1
-	    //add x9,x9,1
 	    lsl x9,x9,2
 	    add x9,x9,x20
 	    mov x12,x2
@@ -292,13 +324,26 @@ ejec_d:
 
         checkloop_d:
 	        ldur w11,[x9]
+			mov x10,xzr
 	        cmp x11,x10
 	        beq hit_d
+
+			mov x10,color_cielo
+			cmp x11,x10
+			bne next_color_d
+			continue_d:
+
 	        sub x12,x12,1
 	        add x9,x13,x9
 	        cbnz x12,checkloop_d
 
 	    ret
+
+		next_color_d:
+			mov x10,color_pasto
+			cmp x11,x10
+			bne hit_d
+			b continue_d
 
     rastro_d:
 		stur x30, [sp, 8]
@@ -331,18 +376,16 @@ ejec_space:
 	set_1:
 		mov x28,x29 				//le actualizamos la posicion a figura1
 		mov x29,x27					//le cargamos a x29 la posicion de figura2
-		mov x25,color_cuadrado2		//cargamos el color de figura 2
-		mov x24,ancho2
-		mov x23,alto2
+		mov x24,tamaño_casa2
+		mov x23,tamaño_casa2
 		mov x26,1
 		
 		b retorno_space
 	set_0:
 		mov x27,x29 				//le actualizamos la posicion a figura1
 		mov x29,x28					//le cargamos a x29 la posicion de figura2
-		mov x25, color_cuadrado		//cargamos el color de figura 2
-		mov x24,ancho
-		mov x23,alto
+		mov x24,tamaño_casa1
+		mov x23,tamaño_casa1
 		mov x26,xzr				
 		b retorno_space
 

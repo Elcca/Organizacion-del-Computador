@@ -463,9 +463,9 @@ circuloF:				//x14=X0  x15=Y0	x16=X1 x17=Y1		x23=Xsize x24=Ysize
 
 direccion:
 
-sub sp,sp, #16  //elimino mis 2 ultimos elementos de la pila
-str x3,[sp,#0]	//guardo x3 y x4
-str x4,[sp,#8]
+	sub sp,sp, #16  //elimino mis 2 ultimos elementos de la pila
+	str x3,[sp,#0]	//guardo x3 y x4
+	str x4,[sp,#8]
 
 
 
@@ -476,9 +476,9 @@ str x4,[sp,#8]
 		lsl x13,x13,2				//multiplico mi auxiliar por 4 para pasarlo a bits
 		add x0,x0,x13				//cargo en x0 mi valor auxiliar o el punto donde empiezo a dibujar
 
-ldr x4,[sp,#8]  				//cargo x3 y x4 a sus valores originales y decremento la pila en 2 
-ldr x3, [sp,#0] 
-add sp,sp, #16  
+	ldr x4,[sp,#8]  				//cargo x3 y x4 a sus valores originales y decremento la pila en 2 
+	ldr x3, [sp,#0] 
+	add sp,sp, #16  
 
 	ret
 

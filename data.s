@@ -18,12 +18,8 @@
 	.equ key_d, 0x10
 	.equ key_space, 0x20
 	delay_time: .dword 0x8fff8
-	.equ ancho, 100
-	.equ alto, 100
-	.equ color_cuadrado, 0xCC00
-	.equ ancho2, 200
-	.equ alto2, 200
-	color_cuadrado2: .dword 0x646282
+	.equ tamaño_casa1, 100
+	.equ tamaño_casa2, 200
 	.equ color_cielo, 0x9999
 	.equ color_pasto, 0x9900
 	color_techo: .dword 0xCC000
@@ -32,19 +28,19 @@
 
 registers:
 
-	// x29 se usa para la posicion del cuadrado actual
-    mov x28,5000		//posicion del cuadrado 
-    mov x27,0xffff		//posicion del cuadrado2 
-	mov x29,x28
+	// x29 se usa para la posicion de figura actual
+    mov x28,5000		//posicion de figura 1 
+    mov x27,0xffff		//posicion de figura 2 
+	mov x29,x28			//empezamos en figura 1
+	//mov x25,			//posicion de figura 3
 
 	mov x26,xzr 		//x26 se usa para definir que figura se mueve
 
-	// x25 se usa para el color del cuadrado actual
-	mov x25, color_cuadrado // empezamos en el cuadrado 1
-	// x24 se usa para el ancho del cuadrado actual
-	mov x24, ancho 			// empezamos con el cuadrado 1
-	// x23 se usa para el ancho del cuadrado actual
-	mov x23, alto 			// empezamos con el cuadrado 1
+	
+	// x24 se usa para el ancho de la figura actual
+	mov x24, tamaño_casa1 			// empezamos con el figura 1
+	// x23 se usa para el ancho de la figura actual
+	mov x23, tamaño_casa1 			// empezamos con el figura 1
 
 
     ret
