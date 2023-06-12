@@ -17,7 +17,7 @@
 	.equ key_s, 0x8
 	.equ key_d, 0x10
 	.equ key_space, 0x20
-	delay_time: .dword 0x8fff8
+	delay_time: .dword 0x8fffa
 	.equ tamaño_casa1, 100
 	.equ tamaño_casa2, 200
 	.equ color_cielo, 0x9999
@@ -29,7 +29,7 @@
 registers:
 
 	// x29 se usa para la posicion de figura actual
-    mov x28,5000		//posicion de figura 1 
+    mov x28,0x1ffff		//posicion de figura 1 
     mov x27,0xffff		//posicion de figura 2 
 	mov x29,x28			//empezamos en figura 1
 	//mov x25,			//posicion de figura 3

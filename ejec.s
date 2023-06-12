@@ -37,7 +37,6 @@ ejec_w:
 
 	mov x1,x24						//x1 = ancho de la figura actual
 	mov x2,x23						//x2 = alto de la figura actual
-	mov x3, x25						//le damos a la figura el color del cuadrado actual
 	sub x29,x29,SCREEN_WIDTH
 	mov x0, x29
 
@@ -80,6 +79,20 @@ ejec_w:
 	        add x9,x9,4
 	        cbnz x12,checkloop_w
 
+		mov x14,SCREEN_WIDTH			
+		mov x9,x29						//x9 = posicion de la figura
+		sub x9,x9,SCREEN_WIDTH
+		mov x13,x2
+		mul x13,x13,x14
+		add x9,x9,x13					//aca estamos parados en el pixel de abajo a la izq de la figura, 
+		lsl x9,x9,2						//todas nuestras figuras rellenan este pixel con el color del fondo
+		add x9,x9,x20
+
+		ldur w11,[x9]
+	    mov x10,color_pasto					//x10 = color negro
+		cmp x11,x10					//si el proximo es negro "hit", no avanzo
+	    bne hit_w
+
 	    ret
 
 		next_color_w:
@@ -121,7 +134,6 @@ ejec_a:
 
 	mov x1,x24						//le doy el ancho de la figura
 	mov x2,x23						//le doy el alto de la figura
-	mov x3, x25						//le damos a square el color del cuadrado actual
 	sub x29,x29,1
 	mov x0, x29
 	
@@ -204,11 +216,8 @@ ejec_s:
 	
 	mov x1,x24
 	mov x2,x23
-	mov x3, x25						//le damos a square el color del cuadrado actual
 	add x29,x29,SCREEN_WIDTH
 	mov x0, x29
-	
-	bl check_next_s
 
 	bl casa
 
@@ -290,7 +299,6 @@ ejec_d:
 
 	mov x1,x24
 	mov x2,x23
-	mov x3, x25						//le damos a square el color del cuadrado actual
 	add x29,x29,1					//le sumo 4 a la posicion donde empiezo el cuadrado
 	mov x0, x29		
 	
@@ -382,8 +390,8 @@ ejec_space:
 		
 		b retorno_space
 	set_0:
-		mov x27,x29 				//le actualizamos la posicion a figura1
-		mov x29,x28					//le cargamos a x29 la posicion de figura2
+		mov x27,x29 				//le actualizamos la posicion a figura2
+		mov x29,x28					//le cargamos a x29 la posicion de figura1
 		mov x24,tamaño_casa1
 		mov x23,tamaño_casa1
 		mov x26,xzr				
@@ -395,6 +403,8 @@ ejec_space:
 	ldur x30,[sp]
 	add sp,sp,8
 	ret
+
+
 
 //----------- FINAL ----------- 
 

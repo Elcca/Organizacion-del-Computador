@@ -9,17 +9,22 @@ main:
 	mov x20, x0 // Guarda la dirección base del framebuffer en x20
 	//---------------- CODE HERE ------------------------------------
 
-
+	bl registers
+	
 	bl fondo
 	
-	mov x0, 0xffff
+	mov x0, x28
+	mov x1, tamaño_casa1
+	mov x2, tamaño_casa1
+
+	bl casa
+
+	mov x0, x27
 	mov x1, tamaño_casa2
 	mov x2, tamaño_casa2
 
 	bl casa
 
-	bl registers
-	
 	bl draw_borthers
 	
 	bl leer
