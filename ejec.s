@@ -29,9 +29,6 @@ delay:
 //----------- EJECUCION DE W ----------- 
 
 ejec_w:
-	//cargo la direccion de retorno en el stack pointer
-	sub sp, sp, 16
-	stur x30, [sp]
 
 	bl check_next_w
 
@@ -42,7 +39,6 @@ ejec_w:
 
 	bl casa
 
-	mov x3, color_cielo
 	mov x1,x24						
 	mov x2,x23
 
@@ -51,17 +47,14 @@ ejec_w:
     hit_w:
 
 	bl delay
-
-	ldur x30,[sp]
-	add sp,sp,16
-	ret
+	
+	b leer
 
     check_next_w:
-	    mov x14,SCREEN_WIDTH			
-		mov x9,x29						//x9 = posicion de la figura
-	    sub x9,x9,x14					//x9 = un pixel arriba de la posicion de la figura
+	    mov x9,x29						//x9 = posicion de la figura
+	    sub x9,x9,SCREEN_WIDTH			//x9 = un pixel arriba de la posicion de la figura
 	    lsl x9,x9,2						
-	    add x9,x9,x20					//convierto x9 en posiciond el FB
+	    add x9,x9,x20					//convierto x9 en posicion del FB
 	    mov x12,x1						//x12 = el ancho de la figura
 
         checkloop_w:
@@ -81,7 +74,7 @@ ejec_w:
 
 		mov x14,SCREEN_WIDTH			
 		mov x9,x29						//x9 = posicion de la figura
-		sub x9,x9,SCREEN_WIDTH
+		sub x9,x9,x14
 		mov x13,x2
 		mul x13,x13,x14
 		add x9,x9,x13					//aca estamos parados en el pixel de abajo a la izq de la figura, 
@@ -89,8 +82,8 @@ ejec_w:
 		add x9,x9,x20
 
 		ldur w11,[x9]
-	    mov x10,color_pasto					//x10 = color negro
-		cmp x11,x10					//si el proximo es negro "hit", no avanzo
+	    mov x10,color_pasto				//x10 = color negro
+		cmp x11,x10						//si el proximo es negro "hit", no avanzo
 	    bne hit_w
 
 	    ret
@@ -103,6 +96,7 @@ ejec_w:
 
 
     rastro_w:
+		sub sp, sp, 8
 		stur x30, [sp, 8]
 
 	    mov x11, SCREEN_WIDTH
@@ -120,16 +114,14 @@ ejec_w:
 	        cbnz x10,rloop_w
 		
 		ldur x30,[sp, 8]
+		add sp,sp,8
 	    ret
 
 
 //----------- EJECUCION DE A ----------- 
 
 ejec_a:
-	//cargo la direccion de retorno en el stack pointer
-	sub sp, sp, 16
-	stur x30, [sp]
-
+	
 	bl check_next_a
 
 	mov x1,x24						//le doy el ancho de la figura
@@ -139,7 +131,6 @@ ejec_a:
 	
 	bl casa
 
-	mov x3, color_cielo
 	mov x1,x24						
 	mov x2,x23
 
@@ -148,15 +139,14 @@ ejec_a:
     hit_a:
 
 	bl delay
-
-	ldur x30,[sp]
-	add sp,sp,16
-	ret
+	
+	b leer
 
     rastro_a:
+		sub sp, sp, 8
 		stur x30, [sp, 8]
 
-	    add x0,x29,x1
+	    add x0,x29,x1					//me paro a la derecha de la figura
 	    lsl x0,x0,2
 	    add x0,x0,x20
 	    mov x10,x2
@@ -169,6 +159,7 @@ ejec_a:
 	        cbnz x10,rloop_a
 		
 		ldur x30,[sp, 8]
+		add sp, sp, 8
 	    ret
 
     check_next_a:
@@ -208,9 +199,6 @@ ejec_a:
 //----------- EJECUCION DE S ----------- 
 
 ejec_s:
-	//cargo la direccion de retorno en el stack pointer
-	sub sp, sp, 0x16
-	stur lr, [sp, #0]
 
 	bl check_next_s
 	
@@ -221,7 +209,6 @@ ejec_s:
 
 	bl casa
 
-	mov x3, color_cielo
 	mov x1,x24						
 	mov x2,x23
 
@@ -230,14 +217,12 @@ ejec_s:
     hit_s:
 	
 	bl delay
-	
-	ldur lr,[sp]
-	add sp,sp,16
 
-	ret
+	b leer
 
 
     rastro_s:
+		sub sp, sp, 8
 		stur x30, [sp, 8]
 
 	    sub x0,x29,SCREEN_WIDTH
@@ -252,6 +237,7 @@ ejec_s:
 	        cbnz x10,rloop_s
 
 		ldur x30, [sp, 8]
+		add sp, sp, 8
 	    ret
 
     check_next_s:
@@ -291,9 +277,6 @@ ejec_s:
 //----------- EJECUCION DE D ----------- 
 
 ejec_d:
-	//cargo la direccion de retorno en el stack pointer
-	sub sp, sp, 16
-	stur lr, [sp]
 
 	bl check_next_d
 
@@ -304,7 +287,6 @@ ejec_d:
 	
 	bl casa
 
-	mov x3, color_cielo
 	mov x1,x24						
 	mov x2,x23
 
@@ -314,10 +296,7 @@ ejec_d:
 
 	bl delay
 
-	ldur lr,[sp]
-	add sp,sp,16
-
-	ret
+	b leer
 
     check_next_d:
 	    mov x9,x29
@@ -354,6 +333,7 @@ ejec_d:
 			b continue_d
 
     rastro_d:
+		sub sp, sp, 8
 		stur x30, [sp, 8]
 
 	    sub x0,x29,1
@@ -369,6 +349,7 @@ ejec_d:
 	        cbnz x10,rloop_d
 
 		ldur x30, [sp, 8]
+		add sp, sp, 8
 	    ret
 
 //----------- EJECUCION DE SPACE ----------- 
@@ -402,11 +383,49 @@ ejec_space:
 
 	ldur x30,[sp]
 	add sp,sp,8
-	ret
+	
+	b leer
 
 
 
 //----------- FINAL ----------- 
 
+//----------- LECTURA DE INPUT -----------
+
+leer:
+	mov x9, GPIO_BASE			//Seteo x9 en la direccion base de gpio
+	
+	// Setea gpios 0 - 9 como lectura
+	str wzr, [x9, GPIO_GPFSEL0]
+
+	// Lee el estado de los GPIO 0 - 31
+	ldr w10, [x9, GPIO_GPLEV0]
+	
+	and w11, w10, key_w	//Mascara de w
+
+	cmp w11, key_w
+	beq ejec_w
+	
+	and w11, w10, key_a	//Mascara de a
+
+	cmp w11, key_a
+	beq ejec_a
+
+	and w11, w10, key_s	//Mascara de s
+
+	cmp w11, key_s
+	beq ejec_s
+
+	and w11, w10, key_d	//Mascara de d
+
+	cmp w11, key_d
+	beq ejec_d
+
+	and w11, w10, key_space	//Mascara de space
+
+	cmp w11, key_space
+	beq ejec_space
+
+	b leer
 
 .endif

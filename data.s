@@ -17,7 +17,7 @@
 	.equ key_s, 0x8
 	.equ key_d, 0x10
 	.equ key_space, 0x20
-	delay_time: .dword 0x8fffa
+	delay_time: .dword 0x9ffff
 	.equ tamaño_casa1, 100
 	.equ tamaño_casa2, 200
 	.equ color_cielo, 0x9999

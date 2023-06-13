@@ -17,13 +17,13 @@ fondo:
 	mov x3,color_cielo
 	mov x1,SCREEN_WIDTH
 	mov x2,SCREEN_HEIGH
-	lsr x2,x2,1
+	lsr x2,x2,1							//mitad del ancho de la pantalla 
 	mov x0,xzr
 
 	bl square
 
 	mov x3,color_pasto
-	mul x0,x1,x2
+	mul x0,x1,x2						//empieza en el pixel del medio a la izq
 	
 	bl square
 
@@ -42,16 +42,16 @@ fondo:
 */
 
 square:
-	lsl x0,x0,2		//avanzo al nro de la direccion
-	add x0,x0,x20 	//direccion +x20
-	mov x13,x2		//alto del cuadrado
+	lsl x0,x0,2								//avanzo al nro de la direccion
+	add x0,x0,x20 							//direccion +x20
+	mov x13,x2								//alto del cuadrado
 	mov x16,SCREEN_WIDTH
-	sub x16,x16,x1 //pixeles - ancho del cuadrado
+	sub x16,x16,x1 							//pixeles - ancho del cuadrado
 	lsl x16,x16,2
 	mov x11,x3
 
     square1:
-	    mov x12,x1		//ancho del cuadrado
+	    mov x12,x1							//ancho del cuadrado
     square2:	
 	    stur w11,[x0]
 	    add x0,x0,4
@@ -67,17 +67,17 @@ square_fill:
 	sub sp, sp, 8
 	stur lr, [sp]
 
-	lsl x0,x0,2		//avanzo al nro de la direccion
-	add x0,x0,x20 	//direccion +x20
-	mov x13,x2		//alto del cuadrado
+	lsl x0,x0,2								//avanzo al nro de la direccion
+	add x0,x0,x20 							//direccion +x20
+	mov x13,x2								//alto del cuadrado
 	mov x16,SCREEN_WIDTH
-	sub x16,x16,x1 //pixeles - ancho del cuadrado
+	sub x16,x16,x1							 //pixeles - ancho del cuadrado
 	lsl x16,x16,2
 
     squarefill1:
-	    mov x12,x1		//ancho del cuadrado
+	    mov x12,x1							//ancho del cuadrado
     squarefill2:	
-	    bl fill_background
+	    bl fill_background					//esta funcion detecta en que zona del fondo esta el pixel a dibujar, y elige de que color pintarlo para que matchee
 	    add x0,x0,4
 	    sub x12,x12,1
 	    cbnz x12,squarefill2
@@ -508,7 +508,7 @@ direccion:
 	add sp,sp, #16  
 
 	ret
-
+ 
 coordenadas:
 			sub sp,sp, #8  //elimino mis 2 ultimos elementos de la pila
 			str x28,[sp,#0]	//guardo x3 y x4
