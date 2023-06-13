@@ -27,6 +27,9 @@ fondo:
 	
 	bl square
 
+	bl Sol
+	bl flores
+
 	ldur lr,[sp, #0]
 	add sp,sp,#8
 	ret
@@ -40,7 +43,7 @@ fondo:
 				x2 alto
 				x3 color
 */
-
+ 
 square:
 	lsl x0,x0,2								//avanzo al nro de la direccion
 	add x0,x0,x20 							//direccion +x20
@@ -106,7 +109,7 @@ casa:
 	mov x10,SCREEN_WIDTH			
 	madd x5,x10,x9,x0				//x5 = el pixel del medio a la izq
 
-	mov x0, x5						//bloque para tapar techo izq 	
+	mov x0,x5						//bloque para tapar techo izq 	
 	mov x1,x9						//seteo tamaño del triangulo
 	mov x2,x9
 	bl trianguloc
@@ -521,6 +524,260 @@ coordenadas:
 			ldr x28,[sp,#0]  				//cargo x3 y x4 a sus valores originales y decremento la pila en 2  
 			add sp,sp, #8 
 			ret
+
+
+//-----------------------------COSAS ESTETICAS
+Sol:
+
+		sub sp,sp, #8  
+		str x30,[sp,#0]
+
+		mov x8,50							//radio
+		mov x15,80							//centro
+		mov x14,70		
+		movz x10, 0xFF, lsl 16	    
+		movk x10, 0xAF00, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8,40							//radio
+		mov x15,80							//centro
+		mov x14,70		
+		movz x10, 0xFF, lsl 16	    
+		movk x10, 0xE200, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		ldr x30,[sp,#0]  				  
+		add sp,sp, #8
+
+	ret
+
+circulo:	
+				
+		mov x27, xzr
+		mov x26, xzr
+		mov x25, xzr
+		mov x24, xzr
+		mov x23, xzr
+		mov x22, xzr
+		mov x11, xzr
+		mov x12, xzr
+
+		mov x24, x14					//guardo mis coordenadas del centro
+		mov x25, x15
+
+		sub x12, x14, x8				//x16 y x17 tienen mis coordenadas del incio del cuadrado
+		sub x11, x15, x8
+
+		sub sp,sp, #8  					//elimino mis 2 ultimos elementos de la pila
+		str x30,[sp,#0]					//guardo x15 y x14
+			
+		//"pinto el cuadrado dependiendo si cumple las condiciones" de aca en adelante es muy parecido a la funcion cuadrado solo que pregunto si cumple la condicion de Calculo para pintar el pixel
+		lsl x22, x8, 1					//Ysize
+
+		loop_circ1:
+
+		mov x14, x12
+		mov x15, x11
+		bl Calcular_Direccion
+		lsl x23, x8, 1					//Xsize
+
+		loop_circ2:
+
+		bl Calculo						//hago los Calculos necesarios con pitagora para ver si la hipotenusa geenerada por la linea entre el centro del circulo y el pixel que estoy viendo 
+		b.le Colorear					//coloreo el circulo
+		bl Calcular_Direccion			//Calculo la Calcular_Direccion de mi x0
+
+		Siguiente:
+
+   		add x0, x0, 4					// Siguiente pixel
+		add x12, x12, 1					//Siguiente coordenada en x
+    	sub x23, x23, 1					// Decrementar contador de mi diametro
+		
+    	cbnz x23,loop_circ2 			// Si no terminó la fila, salto
+		
+		sub x22, x22, 1   				// Decrementar contador Y
+		add x11, x11, 1					//Siguiente pixel en Y
+		sub x12, x24, x8 				//pongo devuelta mi coordenadad de x En 0
+		msub x0, x3, x8, x0				//vuelvo al princio de la linea que estoy pintado x0=x0-x1*4
+		madd x0, x1, x3, x0  			//x0=x0+640*4
+	  	cbnz x22, loop_circ1  			// Si no es la última fila, saltostur w11,[x20]
+
+
+		ldr x30,[sp,#0]  				//cargo x15 y x14 a sus valores originales y decremento la pila en 2  
+		add sp,sp, #8 
+
+		mov x0,x20
+
+		ret
+
+
+Calcular_Direccion:
+
+		sub sp,sp, #16  				//elimino mis 2 ultimos elementos de la pila
+		str x15,[sp,#0]					// guardo y 
+		str x14,[sp,#8]					// guardo x
+
+		mov x1, SCREEN_WIDTH 			// Seteo x1 con el largo de pantalla 640
+		mov x0, x20						// Seteo x0 en el primer pixel de la pantalla
+		mov x3, xzr						// Seteo x3 en vacio
+
+		madd x3, x15, x1, x14			// x3 = (x14 * 640) + x15, donde x14 = y, x15 = x 
+		lsl x3, x3, 2					// x3 = x3 * 4
+		add x0, x0, x3
+
+		ldr x4,[sp,#8]  				//cargo x15 y x14 a sus valores originales y decremento la pila en 2 
+		ldr x3, [sp,#0] 
+		add sp,sp, #16 
+
+	ret
+
+Colorear:
+
+		stur w10,[x0]  					// Colorear el pixel N
+		b Siguiente						//sigo viendo mis demas pixeles
+
+Calculo:						
+			
+		mov x26,x12						//salvo mis x1 y1
+		mov x27,x11
+			
+
+		sub x26, x26, x24				// x26=x1-x0
+		mul x26, x26, x26				//x26=x26 al cuadrado
+		sub x27, x27, x25				//x27=y1-y0
+		mul x27, x27, x27				//x27=x27 al cuadrado
+
+		add x26, x27, x26				//x26=x27+x26
+		mov x27, x8						//x27 ahora es el radio
+
+		mul x27, x27, x27				//x27 es radio cuadrado
+		cmp x26, x27					//x26 = x26 - diametro
+
+		b.gt Siguiente					//si mi radio cuadrado en mayor extricto que mi x26 NO pinto ese pixel
+		b Colorear						//si es menor lo pinto
+
+flores:
+		sub sp,sp, #8  
+		str x30,[sp,#0]
+
+		mov x16, 100					// Posicion 00 de Flor de x
+		mov x17, 330					// Posicion 00 de Flor de y
+		bl Flor
+
+		mov x16, 510					// Posicion 00 de Flor de x
+		mov x17, 360					// Posicion 00 de Flor de y
+		bl Flor
+
+		mov x16, 0						// Posicion 00 de Flor de x
+		mov x17, 360					// Posicion 00 de Flor de y
+		bl Flor
+
+		ldr x30,[sp,#0]  				  
+		add sp,sp, #8
+
+	ret
+
+Flor:
+
+		sub sp,sp, #8  
+		str x30,[sp,#0]
+
+		mov x8, 7						//radio
+		add x19, x17, 50
+		add x18, x16, 63
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x
+		movz x10, 0xCC, lsl 16	    
+		movk x10, 0x0086, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8, 7						//radio
+		add x19, x17, 50
+		add x18, x16, 37
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x
+		movz x10, 0xCC, lsl 16	    
+		movk x10, 0x0086, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8, 7						//radio
+		add x19, x17, 63
+		add x18, x16, 50
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x	
+		movz x10, 0xCC, lsl 16	    
+		movk x10, 0x0086, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8, 7						//radio
+		add x19, x17, 37
+		add x18, x16, 50
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x
+		movz x10, 0xCC, lsl 16	    
+		movk x10, 0x0086, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8, 8						//radio
+		add x19, x17, 42
+		add x18, x16, 41
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x
+		movz x10, 0x80, lsl 16	    
+		movk x10, 0x0054, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8, 8						//radio
+		add x19, x17, 57
+		add x18, x16, 41
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x
+		movz x10, 0x80, lsl 16	    
+		movk x10, 0x0054, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8, 8						//radio
+		add x19, x17, 42
+		add x18, x16, 57
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x
+		movz x10, 0x80, lsl 16	    
+		movk x10, 0x0054, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8, 8						//radio
+		add x19, x17, 57
+		add x18, x16, 57
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x
+		movz x10, 0x80, lsl 16	    
+		movk x10, 0x0054, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		mov x8, 8						//radio
+		add x19, x17, 50
+		add x18, x16, 50
+		mov x15, x19					// Cordenada de y
+		mov x14, x18					// Cordenada de x
+		movz x10, 0xFF, lsl 16	    
+		movk x10, 0xF300, lsl 00 
+		bl Calcular_Direccion
+		bl circulo
+
+		ldr x30,[sp,#0]  				  
+		add sp,sp, #8
+
+	ret
 
 
 .endif

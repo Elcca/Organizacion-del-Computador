@@ -6,6 +6,15 @@
     una ejecucion de alguna tecla
  */
 
+
+/*
+	En cada sector del codigo ejec_<tecla> hay primero una funcion check_next. Esta funciona como
+	"hitbox", basicamente detecta un pixel en la direccion del movimiento si hay algun color que no
+	sea ni el del pasto ni el cielo.
+	Luego se printea la figura corriendola un pixel en la direccion deseada y por ultimo "rastro" 
+	borra una fila de pixeles para atras. 
+ */
+
 .include "data.s"
 .include "shapes.s"
 
@@ -380,6 +389,8 @@ ejec_space:
 
 	retorno_space:
 	bl delay
+	bl delay						//lo llamo dos veces para poder cambiar bien de figura
+	bl delay						
 
 	ldur x30,[sp]
 	add sp,sp,8
