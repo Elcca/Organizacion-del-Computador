@@ -103,48 +103,54 @@ casa:
 	sub sp, sp, #8
 	stur lr, [sp, #0]
 
+	//en este bloque guardo valores utiles para calculos mas adelante
 	mov x4,x0						//guardo x0 para usarlo en la funcion
 	mov x6,x1						//guardo x1 para usarlo
 	lsr x9,x2,1						//x9 = mitad del tamaño del dibujo
 	mov x10,SCREEN_WIDTH			
 	madd x5,x10,x9,x0				//x5 = el pixel del medio a la izq
 
-	mov x0,x5						//bloque para tapar techo izq 	
+	//bloque para tapar techo izq 
+	mov x0,x5						//x0 = pixel del medio a la izq	
 	mov x1,x9						//seteo tamaño del triangulo
 	mov x2,x9
 	bl trianguloc
 
-
-	mov x0, x5						//bloque para dibujar techo izq
-	movz x3, 0xDF, lsl 16	
+	//bloque para dibujar techo izq
+	mov x0, x5						//x0 = pixel del medio a la izq
+	movz x3, 0xDF, lsl 16			//color del triangulo
 	movk x3, 0x1F1F, lsl 0
 	mov x1,x9						//seteo tamaño del triangulo
 	mov x2,x9
 	bl trianguloa
 
-	mov x0, x5						//bloque para tapar el cuadrado de la casa izq
+	//bloque para tapar el cuadrado de la casa izq
+	mov x0, x5						//x0 = pixel del medio a la izq
 	lsr x1,x9,1 					//ancho del cuadrado
 	mov x2,x9						//alto
 	bl square_fill
-
-	mov x0, x5						//bloque para tapar el cuadrado de la casa der
+	
+	//bloque para tapar el cuadrado de la casa der
+	mov x0, x5						//x0 = pixel del medio a la izq
 	add x0,x0,x9					//x0 = pixel de la izq medio + media figura
-	lsr x10,x6,2					
+	lsr x10,x6,2					//x10 = un cuarto de la figura
 	add x0,x0,x10					//x0 = x0 + 1/4 de la figura
 	lsr x1,x9,1 					//ancho del cuadrado
 	mov x2,x9						//alto del cuadrado
 	bl square_fill
 	
-	mov x0, x5						//bloque para dibujar el cuadrado de la casa
-	lsr x10,x6,2
+	//bloque para dibujar el cuadrado de la casa
+	mov x0, x5						//x0 = pixel del medio a la izq
+	lsr x10,x6,2					//x10 = un cuarto de la figura
 	add x0,x0,x10
-	mov x1,x9
+	mov x1,x9						//tamaño del cuadrado
 	mov x2,x9
 	movz x3, 0xFF, lsl 16
 	movk x3, 0x9933, lsl 0
 	bl square
 
-	mov x0, 3						//bloque para dibujar la puerta de la casa
+	//bloque para dibujar la puerta de la casa
+	mov x0, 3						
 	lsr x10,x6,3
 	madd x0,x0,x10,x5 				//1/8 del ancho * 3 + el pixel del medio a la izq (x5)
 	mov x7, SCREEN_WIDTH
@@ -156,7 +162,8 @@ casa:
 	movk x3, 0x3208, lsl 0
 	bl square
 
-	mov x0, 3						//bloque para dibujar la manija de la puerta
+	//bloque para dibujar la manija de la puerta
+	mov x0, 3						
 	lsr x10,x6,3
 	madd x0,x0,x10,x5 				//1/8 del ancho * 3 + el pixel del medio a la izq (x5)
 	lsr x10,x6,2
@@ -170,14 +177,16 @@ casa:
 	movk x3, 0xAE1C, lsl 0
 	bl square
 
-	add x0,x4,x9					//bloque para dibujar techo der
-	movz x3, 0xDF, lsl 16
+	//bloque para dibujar techo der
+	add x0,x4,x9					//x0 = el pixel de arriba al medio
+	movz x3, 0xDF, lsl 16			
 	movk x3, 0x321F, lsl 0
 	mov x1,x9
 	mov x2,x9
 	bl triangulob
 
-	add x0,x4,x9					//bloque para tapar techo der 		
+	//bloque para tapar techo der
+	add x0,x4,x9					 		
 	mov x1,x9
 	mov x2,x9
 	bl triangulo
